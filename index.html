@@ -3,490 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="author" content="Şakir İslam Karabulut">
-    <title>PHASE:ZERO v2.3 // NEURAL SENTINEL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.0/dist/full.umd.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/piexifjs/1.0.6/piexif.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <title>Sonsuzluğum...</title>
+    <!-- Çok daha zarif ve edebi fontlar eklendi -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Konfeti efekti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        :root {
-            --neon-purple: #bc13fe;
-            --dark-purple: #240046;
-            --deep-black: #050005;
-            --system-green: #00ff41;
-            --error-red: #ff0055;
-            --warning-yellow: #ffcc00;
-            --fira: 'Fira Code', monospace;
-            --tech: 'Share Tech Mono', monospace;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        * { box-sizing: border-box; cursor: crosshair !important; }
-
         body {
-            background-color: var(--deep-black);
-            color: var(--neon-purple);
-            font-family: var(--fira);
-            margin: 0;
-            overflow-x: hidden;
+            background: linear-gradient(-45deg, #ffb3d9, #ffccd5, #ff99c2, #ffe6f2);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-        }
-
-        .crt::before {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
-            z-index: 2000;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
-        #boot-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--deep-black);
-            z-index: 3000;
-            display: flex;
-            flex-direction: column;
-            padding: 40px;
+            justify-content: center;
+            height: 100dvh;
+            width: 100vw;
+            font-family: 'Nunito', sans-serif;
             overflow: hidden;
-            font-family: var(--tech);
-        }
-
-        .boot-log { color: var(--neon-purple); font-size: 14px; margin-bottom: 4px; opacity: 0; text-shadow: 0 0 5px var(--neon-purple); animation: fadeIn 0.1s forwards; }
-        @keyframes fadeIn { to { opacity: 1; } }
-
-        #main-ui { opacity: 0; width: 100%; display: flex; flex-direction: column; align-items: center; transition: opacity 1s; }
-
-        .container { width: 95%; max-width: 1200px; padding: 20px; z-index: 10; }
-
-        .glitch {
             position: relative;
-            font-size: 2.5rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 10px;
-            animation: glitch 1s infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Arka planda uçuşan sihirli kalpler */
+        #heart-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-heart {
+            position: absolute;
+            bottom: -10vh;
+            font-size: clamp(1rem, 3vw, 2rem);
+            animation: floatUp linear infinite;
+            opacity: 0;
+            filter: drop-shadow(0 0 5px rgba(255,105,180,0.5));
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0; }
+            20% { opacity: 0.7; }
+            80% { opacity: 0.5; }
+            100% { transform: translateY(-120vh) rotate(360deg) scale(0.5); opacity: 0; }
+        }
+
+        .container {
             text-align: center;
-        }
-
-        @keyframes glitch {
-            0% { text-shadow: 2px 0 0 var(--error-red), -2px 0 0 blue; }
-            50% { text-shadow: -2px 0 0 var(--error-red), 2px 0 0 blue; }
-            100% { text-shadow: 2px 0 0 var(--error-red), -2px 0 0 blue; }
-        }
-
-        .logo-box { border: 1px solid var(--neon-purple); padding: 20px; background: rgba(188, 19, 254, 0.05); margin-bottom: 20px; box-shadow: 0 0 20px rgba(188, 19, 254, 0.1); }
-
-        .grid-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
-        @media (max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
-
-        #drop-zone {
-            border: 1px solid var(--neon-purple);
-            height: 350px;
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            padding: 5vh 5vw;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(216, 27, 96, 0.2);
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90dvh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(36, 0, 70, 0.2);
-            transition: 0.3s;
-            text-align: center;
+            transition: all 0.5s ease;
+            overflow-y: auto; /* İçerik uzarsa zarifçe kaydırılabilsin */
         }
-        #drop-zone:hover { background: rgba(188, 19, 254, 0.1); box-shadow: inset 0 0 30px var(--neon-purple); }
 
-        .preview-box { border: 1px solid var(--dark-purple); background: #000; display: none; height: 350px; overflow: hidden; justify-content: center; align-items: center; position: relative; }
-        .preview-box img { max-width: 100%; max-height: 100%; filter: contrast(1.1) brightness(0.9); }
-        
-        /* Bio-Scan Overlay */
-        .scan-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
+        /* Özel, ince scrollbar tasarımı */
+        .container::-webkit-scrollbar { width: 6px; }
+        .container::-webkit-scrollbar-track { background: transparent; }
+        .container::-webkit-scrollbar-thumb { background: rgba(255, 105, 180, 0.4); border-radius: 10px; }
+
+        h1 {
+            color: #d81b60;
+            margin-bottom: 2vh;
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(2.5rem, 6vh, 4rem);
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            line-height: 1.2;
+        }
+
+        .giris-mesaji {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.1rem, 2.5vh, 1.4rem);
+            color: #880e4f;
+            margin-bottom: 3vh;
+            font-style: italic;
+            line-height: 1.5;
+            padding: 0 2vw;
+        }
+
+        .cicekler {
+            font-size: clamp(3rem, 7vh, 4rem);
+            margin-bottom: 2vh;
+            animation: salla 4s infinite ease-in-out;
+            filter: drop-shadow(0 5px 15px rgba(255, 105, 180, 0.5));
+        }
+
+        @keyframes salla {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.05); }
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 1vh;
+            width: 100%;
+        }
+
+        button {
+            font-family: 'Nunito', sans-serif;
+            font-size: clamp(1.1rem, 3vh, 1.6rem);
+            padding: 2vh 6vw;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 800;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Daha yumuşak büyüme */
+            z-index: 20;
+        }
+
+        #evet {
+            background: linear-gradient(45deg, #ff4081, #f50057);
+            color: white;
+            box-shadow: 0 8px 25px rgba(245, 0, 87, 0.5);
+            animation: heartbeat 2s infinite;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); box-shadow: 0 8px 25px rgba(245, 0, 87, 0.4); }
+            15% { transform: scale(1.05); box-shadow: 0 12px 30px rgba(245, 0, 87, 0.6); }
+            30% { transform: scale(1); box-shadow: 0 8px 25px rgba(245, 0, 87, 0.4); }
+            45% { transform: scale(1.05); box-shadow: 0 12px 30px rgba(245, 0, 87, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 8px 25px rgba(245, 0, 87, 0.4); }
+        }
+
+        #evet:hover {
+            background: linear-gradient(45deg, #f50057, #c51162);
+            transform: scale(1.1) !important;
+            animation: none;
+        }
+
+        /* Mutlu Son Ekranı */
+        #mutlu-son {
             display: none;
-            z-index: 100;
-        }
-        .scan-line {
-            width: 100%; height: 2px; background: var(--system-green);
-            position: absolute; top: 0; left: 0;
-            box-shadow: 0 0 15px var(--system-green);
-            animation: moveScan 2s infinite linear;
-        }
-        @keyframes moveScan { from { top: 0; } to { top: 100%; } }
-
-        .terminal {
-            background: rgba(0, 0, 0, 0.95);
-            border: 1px solid var(--dark-purple);
-            padding: 15px;
-            height: 450px;
-            overflow-y: auto;
-            margin-top: 20px;
-            box-shadow: inset 0 0 20px rgba(188, 19, 254, 0.2);
-            font-size: 11px;
-            font-family: var(--tech);
+            text-align: center;
+            animation: fadeIn 1.5s ease-in-out;
+            width: 100%;
+            padding-top: 2vh;
+            padding-bottom: 2vh;
         }
 
-        .log-line { margin-bottom: 5px; line-height: 1.3; }
-        .log-line .prefix { color: var(--system-green); margin-right: 8px; font-weight: bold; }
-        .log-line.error { color: var(--error-red); }
-        .log-line.intel { color: var(--warning-yellow); border-left: 2px solid var(--warning-yellow); padding-left: 10px; margin: 10px 0; }
+        #mutlu-son img {
+            width: clamp(120px, 20vh, 180px);
+            height: clamp(120px, 20vh, 180px);
+            border-radius: 50%;
+            object-fit: cover;
+            border: 6px solid #fff;
+            margin-bottom: 1.5vh;
+            box-shadow: 0 0 25px rgba(255, 64, 129, 0.6);
+            animation: glow 3s infinite alternate;
+        }
 
-        .data-table { width: 100%; border-collapse: collapse; margin: 10px 0; background: rgba(0,0,0,0.3); }
-        .data-table td { border: 1px solid var(--dark-purple); padding: 8px; }
-        .data-table td:first-child { color: var(--system-green); font-weight: bold; width: 30%; }
+        @keyframes glow {
+            from { box-shadow: 0 0 15px rgba(255, 64, 129, 0.4); }
+            to { box-shadow: 0 0 35px rgba(255, 64, 129, 0.8); }
+        }
 
-        #map-container { margin-top: 20px; border: 1px solid var(--neon-purple); height: 250px; display: none; filter: invert(100%) hue-rotate(180deg); }
+        /* İltifatlar ve Alıntılar Bölümü */
+        .ask-sozleri {
+            margin-top: 2vh;
+            padding: 2vh;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            border: 1px dashed rgba(216, 27, 96, 0.3);
+        }
 
-        .action-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .alinti {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1rem, 2vh, 1.2rem);
+            color: #4a148c;
+            line-height: 1.6;
+            margin-bottom: 1.5vh;
+        }
 
-        .btn {
-            background: #000; border: 1px solid var(--neon-purple); color: var(--neon-purple);
-            padding: 10px 15px; font-family: var(--fira); font-size: 10px; text-transform: uppercase; transition: 0.2s;
+        .alinti-yazar {
+            font-size: 0.85rem;
+            color: #d81b60;
+            text-align: right;
             font-weight: bold;
+            margin-top: -1vh;
+            margin-bottom: 2vh;
         }
-        .btn:hover:not(:disabled) { background: var(--neon-purple); color: #000; box-shadow: 0 0 15px var(--neon-purple); }
-        .btn:disabled { opacity: 0.5; border-color: #444; color: #444; }
-        .btn.special { border-color: var(--system-green); color: var(--system-green); }
-        .btn.intel { border-color: var(--warning-yellow); color: var(--warning-yellow); }
 
-        .edit-form {
-            display: none; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
-            background: rgba(20, 0, 30, 0.9); padding: 15px; border: 1px solid var(--neon-purple); margin-top: 15px;
+        .iltifat {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 600;
+            color: #ad1457;
+            font-size: clamp(1rem, 2.2vh, 1.15rem);
+            margin-bottom: 1vh;
         }
-        .input-group label { display: block; font-size: 9px; color: var(--system-green); margin-bottom: 3px; font-weight: bold; }
-        .input-group input { width: 100%; background: #000; border: 1px solid var(--dark-purple); color: #fff; padding: 6px; font-size: 11px; }
 
-        #ai-loader { display: none; margin-left: 10px; color: var(--warning-yellow); animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
+        hr.ayirici {
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, rgba(216, 27, 96, 0), rgba(216, 27, 96, 0.5), rgba(216, 27, 96, 0));
+            margin: 2vh 0;
+        }
 
-        footer { margin: 30px 0; font-size: 9px; opacity: 0.4; letter-spacing: 3px; text-align: center; }
+        /* Sayaç Tasarımı */
+        .sayac-kutusu {
+            display: flex;
+            justify-content: center;
+            gap: 2vw;
+            margin-top: 2vh;
+            width: 100%;
+        }
+
+        .zaman-birimi {
+            background: rgba(255, 255, 255, 0.8);
+            color: #d81b60;
+            padding: 1.2vh 1vw;
+            border-radius: 15px;
+            flex: 1;
+            box-shadow: inset 0 0 10px rgba(255, 179, 217, 0.3), 0 5px 15px rgba(216, 27, 96, 0.1);
+            border: 1px solid rgba(255, 179, 217, 0.8);
+        }
+
+        .zaman-degeri {
+            font-size: clamp(1.1rem, 3vh, 1.6rem);
+            font-weight: 800;
+            display: block;
+        }
+
+        .zaman-etiketi {
+            font-size: clamp(0.55rem, 1.2vh, 0.75rem);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 3px;
+            display: block;
+            font-weight: 700;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
     </style>
 </head>
-<body class="crt">
+<body>
 
-    <div id="boot-screen"></div>
+    <!-- Uçuşan Kalplerin Konteyneri -->
+    <div id="heart-container"></div>
 
-    <div id="main-ui">
-        <div class="container">
-            <header class="header">
-                <div class="logo-box">
-                    <div class="glitch">PHASE:ZERO v2.3</div>
-                    <div class="tagline">NEURAL SENTINEL // FORENSIC AI // OPERATOR: ŞAKİR İSLAM KARABULUT</div>
-                </div>
-            </header>
-
-            <div class="grid-layout">
-                <div id="drop-zone">
-                    <p style="font-size: 1.5rem;">[+] NEURAL INJECTION</p>
-                    <p style="font-size: 0.7rem; opacity: 0.5;">FOTOĞRAFI ANALİZ ÜNİTESİNE BIRAKIN</p>
-                    <input type="file" id="file-input" accept="image/jpeg" style="display:none">
-                </div>
-                <div class="preview-box" id="preview-box">
-                    <div id="scan-overlay" class="scan-overlay"><div class="scan-line"></div></div>
-                    <img id="img-preview" src="">
-                </div>
-            </div>
-
-            <div class="action-btns" id="result-btns" style="display:none">
-                <button id="ai-scan-btn" class="btn intel">NEURAL AI ARAŞTIRMASI</button>
-                <button id="bio-scan-btn" class="btn special">BİYOMETRİK YÜZ TARAMASI</button>
-                <button id="edit-btn" class="btn">MANİPÜLASYON MODÜLÜ</button>
-                <button id="report-btn" class="btn">ADLİ RAPOR (.TXT)</button>
-                <button id="clean-btn" class="btn" style="border-color:var(--error-red); color:var(--error-red);">İZLERİ YOK ET</button>
-                <button onclick="location.reload()" class="btn">SİSTEMİ YENİLE</button>
-                <span id="ai-loader">YAPAY ZEKA ANALİZ EDİYOR...</span>
-            </div>
-
-            <div class="terminal" id="terminal-output"></div>
-
-            <div id="edit-panel" class="edit-form">
-                <div class="input-group"><label>MARKA</label><input type="text" id="e-make"></div>
-                <div class="input-group"><label>MODEL</label><input type="text" id="e-model"></div>
-                <div class="input-group"><label>ZAMAN</label><input type="text" id="e-date"></div>
-                <div class="input-group"><label>ISO</label><input type="text" id="e-iso"></div>
-                <div class="input-group"><label>APERTURE</label><input type="text" id="e-fn"></div>
-                <div class="input-group"><label>LENS</label><input type="text" id="e-lens"></div>
-                <div class="input-group"><label>LATITUDE</label><input type="text" id="e-lat"></div>
-                <div class="input-group"><label>LONGITUDE</label><input type="text" id="e-lng"></div>
-                <div class="input-group"><label>SİSTEM</label><input type="text" id="e-soft" value="PHASE:ZERO v2.3"></div>
-                <div style="grid-column: span 3; display: flex; gap: 10px; margin-top: 10px;">
-                    <button id="save-btn" class="btn special" style="flex:1">YENİ VERİLERİ ENJEKTE ET</button>
-                    <button id="cancel-btn" class="btn" style="flex:1">İPTAL</button>
-                </div>
-            </div>
-
-            <div id="map-container"></div>
+    <!-- Soru Ekranı -->
+    <div class="container" id="soru-ekrani">
+        <div class="cicekler">🌸 💖 🌷</div>
+        <p class="giris-mesaji">"Hayatıma girdiğin o günden beri, her sabah daha güzel bir dünyaya uyanıyorum..."</p>
+        <h1 style="font-family: 'Dancing Script', cursive;">Melike,<br>Beni seviyor musun?</h1>
+        <div class="buttons">
+            <button id="evet">Evet, Çok Seviyorum! 🥰</button>
         </div>
-        <footer>2024 // ADLİ BİLİŞİM & YAPAY ZEKA LABORATUVARI // POLY HACK TEAM</footer>
+    </div>
+
+    <!-- Cevap Evet Olunca Çıkacak Ekran -->
+    <div class="container" id="mutlu-son">
+        <!-- İstersen aşağıdaki linki sizin bir fotoğrafınızın linkiyle değiştirebilirsin -->
+        <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Aşk" onerror="this.style.display='none'">
+        
+        <h1 style="font-family: 'Dancing Script', cursive;">Ben de seni çok seviyorum! ❤️</h1>
+        
+        <div class="ask-sozleri">
+            <p class="iltifat">Sen benim en güzel manzaramsın. Gülüşünle dünyamı aydınlatan, kalbimin en huzurlu köşesisin.</p>
+            <hr class="ayirici">
+            <p class="alinti"><i>"Bir insanı sevmekle başlayacak her şey..."</i></p>
+            <p class="alinti-yazar">- Sait Faik Abasıyanık</p>
+            <hr class="ayirici">
+            <p class="alinti"><i>"Okyanusta ölmez de insan, gider bir kaşık 'sevda' da boğulur." Ben sende boğulmaya, seninle nefes almaya geldim.</i></p>
+            <p class="alinti-yazar">- Cemal Süreya & Benim Kalbim</p>
+            <hr class="ayirici">
+            <p class="iltifat">İyi ki varsın, iyi ki benimlesin sevgilim...</p>
+        </div>
+
+        <!-- Sayaç Kısmı -->
+        <p style="color: #d81b60; font-size: clamp(0.9rem, 2vh, 1.1rem); margin-top: 3vh; font-weight: bold;">Ruhumun eşini bulduğum o günden beri:</p>
+        <div class="sayac-kutusu" id="sayac-kutusu">
+            <div class="zaman-birimi"><span class="zaman-degeri" id="gun">0</span><span class="zaman-etiketi">Gün</span></div>
+            <div class="zaman-birimi"><span class="zaman-degeri" id="saat">0</span><span class="zaman-etiketi">Saat</span></div>
+            <div class="zaman-birimi"><span class="zaman-degeri" id="dakika">0</span><span class="zaman-etiketi">Dakika</span></div>
+            <div class="zaman-birimi"><span class="zaman-degeri" id="saniye">0</span><span class="zaman-etiketi">Saniye</span></div>
+        </div>
     </div>
 
     <script>
-        const apiKey = ""; // Runtime provides this.
-        const bootScreen = document.getElementById('boot-screen');
-        const mainUI = document.getElementById('main-ui');
-        const terminal = document.getElementById('terminal-output');
-        const fileInput = document.getElementById('file-input');
-        const dropZone = document.getElementById('drop-zone');
-        const imgPreview = document.getElementById('img-preview');
-        const previewBox = document.getElementById('preview-box');
-        const scanOverlay = document.getElementById('scan-overlay');
-        const editPanel = document.getElementById('edit-panel');
-        const resultBtns = document.getElementById('result-btns');
-        const mapContainer = document.getElementById('map-container');
-        const aiLoader = document.getElementById('ai-loader');
-
-        let activeFile = null, originalBase64 = null, map = null, isEditing = false, lastData = null;
-
-        // --- Boot Sequence ---
-        const bootMsg = [
-            "PHASE:ZERO NEURAL SENTINEL v2.3 STARTING...",
-            "Loading Biometric Databases... DONE",
-            "Connecting to Neural Intelligence Network... SECURE",
-            "Establishing Google Search Grounding... ACTIVE",
-            "Welcome back, OPERATOR ŞAKİR İSLAM KARABULUT.",
-            "System state: ULTIMATE ACCESS GRANTED."
-        ];
-
-        async function startBoot() {
-            for (let m of bootMsg) {
-                let div = document.createElement('div');
-                div.className = 'boot-log';
-                div.textContent = `> ${m}`;
-                bootScreen.appendChild(div);
-                await new Promise(r => setTimeout(r, 120));
-            }
-            setTimeout(() => { bootScreen.style.display='none'; mainUI.style.opacity='1'; log("Sistem hazır. Veri enjekte edin.", "SYS"); }, 400);
-        }
-        window.onload = startBoot;
-
-        async function log(msg, type = "SYS", style = "") {
-            const line = document.createElement('div');
-            line.className = `log-line ${style}`;
-            line.innerHTML = `<span class="prefix">[${type}]</span><span>${msg}</span>`;
-            terminal.appendChild(line);
-            terminal.scrollTop = terminal.scrollHeight;
-        }
-
-        // --- Gemini API Araştırma Ünitesi ---
-        async function runAIAnalysis(prompt, includeImage = true) {
-            aiLoader.style.display = "inline";
-            log("Yapay Zeka sorgusu gönderiliyor...", "NEURAL");
-
-            const payload = {
-                contents: [{
-                    parts: [
-                        { text: prompt }
-                    ]
-                }],
-                tools: [{ google_search: {} }]
-            };
-
-            if (includeImage && originalBase64) {
-                payload.contents[0].parts.push({
-                    inlineData: {
-                        mimeType: "image/jpeg",
-                        data: originalBase64.split(',')[1]
-                    }
-                });
-            }
-
-            let attempt = 0;
-            const delays = [1000, 2000, 4000, 8000, 16000];
-
-            while (attempt < 5) {
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        body: JSON.stringify(payload)
-                    });
-                    const result = await response.json();
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    const sources = result.candidates?.[0]?.groundingMetadata?.groundingAttributions;
-
-                    aiLoader.style.display = "none";
-                    return { text, sources };
-                } catch (err) {
-                    attempt++;
-                    if (attempt === 5) {
-                        aiLoader.style.display = "none";
-                        log("Bağlantı hatası: Neural Network yanıt vermiyor.", "ERR", "error");
-                        return null;
-                    }
-                    await new Promise(r => setTimeout(r, delays[attempt-1]));
-                }
-            }
-        }
-
-        dropZone.onclick = () => fileInput.click();
-        fileInput.onchange = (e) => handleFile(e.target.files[0]);
-
-        async function handleFile(file) {
-            if (!file || file.type !== "image/jpeg") {
-                log("HATA: Sadece JPEG veri paketleri kabul edilir.", "ERR", "error");
-                return;
-            }
-            activeFile = file;
-            terminal.innerHTML = "";
+        // --- ARKA PLANDA UÇUŞAN KALPLER OLUŞTURUCU ---
+        const heartContainer = document.getElementById('heart-container');
+        const hearts = ['💖', '💕', '💗', '💓', '🌸', '✨']; // Sadece kalp değil, çiçek ve ışıltı da var
+        
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('floating-heart');
+            heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
             
-            const reader = new FileReader();
-            reader.onload = async (re) => {
-                originalBase64 = re.target.result;
-                imgPreview.src = originalBase64;
-                previewBox.style.display = "flex";
-                dropZone.style.display = "none";
-                resultBtns.style.display = "flex";
-
-                await log(`DOSYA YAKALANDI: ${file.name}`, "FILE");
-
-                try {
-                    const data = await exifr.parse(file, { gps: true, tiff: true, exif: true });
-                    lastData = data || {};
-                    
-                    renderTable(lastData);
-                    fillForm(lastData);
-                    initMap(lastData?.latitude || 41.0082, lastData?.longitude || 28.9784, !!lastData?.latitude);
-                    
-                    if (lastData.LensModel) {
-                        log(`LENS TESPİT EDİLDİ: ${lastData.LensModel} (${lastData.FocalLength ? lastData.FocalLength + 'mm' : 'Bilinmiyor'})`, "OPTIC");
-                    }
-                } catch (err) { log("EXIF ANALİZ HATASI.", "ERR", "error"); }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        document.getElementById('ai-scan-btn').onclick = async () => {
-            const res = await runAIAnalysis("Bu fotoğrafı internette araştır. Nerede çekilmiş olabilir? İçindeki nesneler, yerler veya insanlar hakkında bilgi ver. Varsa lens modelini analiz et.");
-            if (res) {
-                log("NEURAL ISTIHBARAT RAPORU:", "INTEL", "intel");
-                log(res.text, "AI", "intel");
-                if (res.sources) {
-                    log("KAYNAKLAR DOĞRULANDI.", "GROUNDING");
-                }
-            }
-        };
-
-        document.getElementById('bio-scan-btn').onclick = async () => {
-            scanOverlay.style.display = "block";
-            log("Biyometrik yüz taraması başlatıldı...", "BIO");
+            // Rastgele konum, boyut ve animasyon süresi
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 3 + 4 + 's'; // 4 ile 7 saniye arası
+            heart.style.fontSize = Math.random() * 1.5 + 1 + 'rem';
             
-            const res = await runAIAnalysis("Bu fotoğrafta yüz var mı? Varsa tahmini yaş, cinsiyet ve duygusal durum analizi yap. Biyometrik benzerlikleri araştır.");
+            heartContainer.appendChild(heart);
             
+            // Animasyon bitince kalbi sil ki sayfayı yormasın
             setTimeout(() => {
-                scanOverlay.style.display = "none";
-                if (res) {
-                    log("BİYOMETRİK ANALİZ SONUCU:", "BIO", "intel");
-                    log(res.text, "BIO", "intel");
-                }
-            }, 3000);
-        };
+                heart.remove();
+            }, 7000);
+        }
+        
+        // Her 400 milisaniyede bir kalp üret
+        setInterval(createHeart, 400);
 
-        function renderTable(data) {
-            const table = document.createElement('table');
-            table.className = 'data-table';
-            table.innerHTML = `<tr><td>ATTRIBUTE</td><td>VALUE</td></tr>`;
-            const rows = [
-                ['VENDOR', data.Make || 'N/A'],
-                ['MODEL', data.Model || 'N/A'],
-                ['LENS', data.LensModel || 'N/A'],
-                ['F-STOP', data.FNumber ? 'f/' + data.FNumber : 'N/A'],
-                ['TIME', data.DateTimeOriginal ? new Date(data.DateTimeOriginal).toLocaleString() : 'N/A']
-            ];
-            rows.forEach(r => table.innerHTML += `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`);
-            terminal.appendChild(table);
+        // --- BUTON VE EKRAN GEÇİŞİ ---
+        const evetButonu = document.getElementById('evet');
+        const soruEkrani = document.getElementById('soru-ekrani');
+        const mutluSonEkrani = document.getElementById('mutlu-son');
+
+        evetButonu.addEventListener('click', function() {
+            soruEkrani.style.display = 'none';
+            mutluSonEkrani.style.display = 'flex';
+            mutluSonEkrani.style.flexDirection = 'column';
+            mutluSonEkrani.style.alignItems = 'center';
+
+            // Harika bir konfeti şöleni
+            var duration = 5 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) { return clearInterval(interval); }
+                var particleCount = 60 * (timeLeft / duration);
+                
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        });
+
+        // --- SAYAÇ KODLARI ---
+        const suAnkiTarih = new Date();
+        const tanismaTarihi = new Date(suAnkiTarih.getFullYear(), suAnkiTarih.getMonth(), 2, 20, 0, 0); // Ayın 2'si saat 20:00 olarak ayarlandı
+
+        function sayaciGuncelle() {
+            const simdi = new Date();
+            const fark = simdi - tanismaTarihi;
+
+            if (fark < 0) return;
+
+            const gun = Math.floor(fark / (1000 * 60 * 60 * 24));
+            const saat = Math.floor((fark % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const dakika = Math.floor((fark % (1000 * 60 * 60)) / (1000 * 60));
+            const saniye = Math.floor((fark % (1000 * 60)) / 1000);
+
+            document.getElementById('gun').innerText = gun;
+            document.getElementById('saat').innerText = saat;
+            document.getElementById('dakika').innerText = dakika;
+            document.getElementById('saniye').innerText = saniye;
         }
 
-        function fillForm(data) {
-            document.getElementById('e-make').value = data.Make || "";
-            document.getElementById('e-model').value = data.Model || "";
-            document.getElementById('e-date').value = data.DateTimeOriginal ? formatDate(data.DateTimeOriginal) : "";
-            document.getElementById('e-iso').value = data.ISO || "";
-            document.getElementById('e-fn').value = data.FNumber || "";
-            document.getElementById('e-lat').value = data.latitude || "";
-            document.getElementById('e-lng').value = data.longitude || "";
-            document.getElementById('e-lens').value = data.LensModel || "";
-        }
-
-        function formatDate(d) {
-            const date = new Date(d);
-            return `${date.getFullYear()}:${String(date.getMonth()+1).padStart(2,'0')}:${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}:${String(date.getSeconds()).padStart(2,'0')}`;
-        }
-
-        function initMap(lat, lon, hasMarker) {
-            mapContainer.style.display = "block";
-            if (map) map.remove();
-            map = L.map(mapContainer).setView([lat, lon], hasMarker ? 15 : 5);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            if (hasMarker) L.marker([lat, lon]).addTo(map);
-
-            map.on('click', (e) => {
-                if (!isEditing) return;
-                const { lat, lng } = e.latlng;
-                document.getElementById('e-lat').value = lat.toFixed(6);
-                document.getElementById('e-lng').value = lng.toFixed(6);
-                log(`HEDEF KOORDİNAT: ${lat.toFixed(5)}, ${lng.toFixed(5)}`, "GPS");
-            });
-        }
-
-        document.getElementById('edit-btn').onclick = () => { isEditing = true; editPanel.style.display = "grid"; log("MANİPÜLASYON MODÜLÜ DEVREDE.", "SEC"); };
-        document.getElementById('cancel-btn').onclick = () => { editPanel.style.display = "none"; isEditing = false; };
-
-        document.getElementById('save-btn').onclick = async () => {
-            await log("YENİ VERİ KATMANI GÖMÜLÜYOR...", "INJECT");
-            try {
-                let exif = {"0th": {}, "Exif": {}, "GPS": {}};
-                exif["0th"][piexif.ImageIFD.Make] = document.getElementById('e-make').value;
-                exif["0th"][piexif.ImageIFD.Model] = document.getElementById('e-model').value;
-                exif["Exif"][piexif.ExifIFD.DateTimeOriginal] = document.getElementById('e-date').value;
-                exif["Exif"][piexif.ExifIFD.LensModel] = document.getElementById('e-lens').value;
-
-                const lat = parseFloat(document.getElementById('e-lat').value);
-                const lng = parseFloat(document.getElementById('e-lng').value);
-                if (!isNaN(lat)) {
-                    exif["GPS"][piexif.GPSIFD.GPSLatitudeRef] = lat >= 0 ? "N" : "S";
-                    exif["GPS"][piexif.GPSIFD.GPSLatitude] = degToExif(lat);
-                    exif["GPS"][piexif.GPSIFD.GPSLongitudeRef] = lng >= 0 ? "E" : "W";
-                    exif["GPS"][piexif.GPSIFD.GPSLongitude] = degToExif(lng);
-                }
-
-                const newBase64 = piexif.insert(piexif.dump(exif), originalBase64);
-                const a = document.createElement('a');
-                a.href = newBase64;
-                a.download = "SENTINEL_MOD_" + activeFile.name;
-                a.click();
-                await log("İŞLEM BAŞARILI. YENİ KİMLİK OLUŞTURULDU.", "DONE");
-            } catch (e) { log("INJECTION FAIL.", "ERR", "error"); }
-        };
-
-        function degToExif(deg) {
-            const abs = Math.abs(deg);
-            const d = Math.floor(abs), m = Math.floor((abs-d)*60), s = Math.floor(((abs-d)*60-m)*60*100);
-            return [[d,1],[m,1],[s,100]];
-        }
-
-        document.getElementById('report-btn').onclick = () => {
-            let r = `PHASE:ZERO v2.3 NEURAL SENTINEL REPORT\n-----------------------------------\nOPERATOR: SAKIR ISLAM KARABULUT\n\nVERILER:\n`;
-            document.querySelectorAll('.data-table tr').forEach(row => r += `${row.cells[0].innerText}: ${row.cells[1].innerText}\n`);
-            r += `\nNEURAL ANALYSIS LOGS:\n` + terminal.innerText;
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([r], {type:'text/plain'}));
-            a.download = "SENTINEL_ADLI_RAPOR.txt";
-            a.click();
-        };
-
-        document.getElementById('clean-btn').onclick = () => {
-            const clean = piexif.remove(originalBase64);
-            const a = document.createElement('a');
-            a.href = clean;
-            a.download = "GHOST_CLEANED_" + activeFile.name;
-            a.click();
-            log("TÜM İZLER SİLİNDİ.", "SEC");
-        };
+        sayaciGuncelle();
+        setInterval(sayaciGuncelle, 1000);
     </script>
+
 </body>
 </html>
