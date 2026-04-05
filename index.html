@@ -3,395 +3,801 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sonsuzluğum...</title>
-    <!-- Çok daha zarif ve edebi fontlar eklendi -->
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    <!-- Konfeti efekti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <meta name="author" content="Şakir İslam Karabulut">
+    <title>PHASE:ZERO // DİJİTAL İZ SIZINTISI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.0/dist/full.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/piexifjs/1.0.6/piexif.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        :root {
+            --neon-purple: #bc13fe;
+            --dark-purple: #240046;
+            --deep-black: #050005;
+            --system-green: #00ff41;
+            --error-red: #ff0055;
+            --fira: 'Fira Code', monospace;
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            background: linear-gradient(-45deg, #ffb3d9, #ffccd5, #ff99c2, #ffe6f2);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background-color: var(--deep-black);
+            color: var(--neon-purple);
+            font-family: var(--fira);
+            margin: 0;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 1000;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .univ-logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 80px;
+            height: auto;
+            z-index: 1100;
+            filter: drop-shadow(0 0 5px var(--neon-purple)) grayscale(0.5);
+            transition: 0.3s;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            padding: 30px 10px;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-box {
+            border: 2px solid var(--neon-purple);
+            display: inline-block;
+            padding: 15px 30px;
+            background: rgba(188, 19, 254, 0.05);
+            box-shadow: 0 0 20px var(--neon-purple);
+            animation: flicker 4s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 1; }
+            3% { opacity: 0.7; }
+            6% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+        }
+
+        .tagline {
+            font-size: 0.85rem;
+            margin-top: 8px;
+            color: var(--system-green);
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-layout { grid-template-columns: 1fr; }
+            .univ-logo { width: 50px; top: 10px; left: 10px; }
+        }
+
+        #drop-zone {
+            border: 2px dashed var(--neon-purple);
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(36, 0, 70, 0.2);
+            display: flex;
+            flex-direction: column;
             justify-content: center;
-            height: 100dvh;
-            width: 100vw;
-            font-family: 'Nunito', sans-serif;
-            overflow: hidden;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        #drop-zone:hover {
+            background: rgba(188, 19, 254, 0.15);
+            box-shadow: 0 0 25px var(--neon-purple);
+        }
+
+        .preview-box {
             position: relative;
+            border: 1px solid var(--dark-purple);
+            background: #000;
+            display: none;
+            overflow: hidden;
+            height: 300px;
+            justify-content: center;
+            align-items: center;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .preview-box img {
+            max-width: 100%;
+            max-height: 100%;
+            filter: grayscale(100%) brightness(1.1) contrast(1.1);
         }
 
-        /* Arka planda uçuşan sihirli kalpler */
-        #heart-container {
+        .scanner-bar {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
+            height: 4px;
+            background: var(--system-green);
+            box-shadow: 0 0 15px var(--system-green);
+            animation: scan 3s infinite linear;
+            display: none;
+            z-index: 5;
         }
 
-        .floating-heart {
-            position: absolute;
-            bottom: -10vh;
-            font-size: clamp(1rem, 3vw, 2rem);
-            animation: floatUp linear infinite;
-            opacity: 0;
-            filter: drop-shadow(0 0 5px rgba(255,105,180,0.5));
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
         }
 
-        @keyframes floatUp {
-            0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0; }
-            20% { opacity: 0.7; }
-            80% { opacity: 0.5; }
-            100% { transform: translateY(-120vh) rotate(360deg) scale(0.5); opacity: 0; }
+        .terminal {
+            background: #000;
+            border: 1px solid var(--dark-purple);
+            padding: 20px;
+            height: 500px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 30px rgba(188, 19, 254, 0.15);
         }
 
-        .container {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.9);
-            padding: 5vh 5vw;
-            border-radius: 30px;
-            box-shadow: 0 20px 50px rgba(216, 27, 96, 0.2);
-            position: relative;
-            z-index: 10;
-            width: 90%;
-            max-width: 500px;
-            max-height: 90dvh;
+        .log-line {
+            margin-bottom: 6px;
+            line-height: 1.5;
+            font-size: 13px;
+        }
+
+        .log-line .prefix { color: var(--system-green); margin-right: 12px; }
+        .log-line.error { color: var(--error-red); }
+        .log-line.highlight { color: #fff; text-shadow: 0 0 5px var(--neon-purple); }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.8rem;
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid var(--dark-purple);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .data-table th { background: rgba(188, 19, 254, 0.2); color: #fff; }
+
+        #map-container {
+            margin-top: 20px;
+            border: 1px solid var(--neon-purple);
+            height: 300px;
+            display: none;
+            filter: invert(100%) hue-rotate(180deg) brightness(85%);
+        }
+
+        .action-btns {
+            margin-top: 25px;
             display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid var(--neon-purple);
+            color: var(--neon-purple);
+            padding: 10px 20px;
+            font-family: var(--fira);
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .btn:hover {
+            background: var(--neon-purple);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-purple);
+        }
+
+        .btn.special { border-color: var(--system-green); color: var(--system-green); }
+        .btn.special:hover { background: var(--system-green); color: #000; }
+
+        footer {
+            margin-top: auto;
+            padding: 30px;
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            opacity: 0.5;
+            text-align: center;
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--deep-black); }
+        ::-webkit-scrollbar-thumb { background: var(--dark-purple); }
+
+        .cam-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: all 0.5s ease;
-            overflow-y: auto; /* İçerik uzarsa zarifçe kaydırılabilsin */
         }
 
-        /* Özel, ince scrollbar tasarımı */
-        .container::-webkit-scrollbar { width: 6px; }
-        .container::-webkit-scrollbar-track { background: transparent; }
-        .container::-webkit-scrollbar-thumb { background: rgba(255, 105, 180, 0.4); border-radius: 10px; }
+        video { border: 2px solid var(--neon-purple); max-width: 90%; max-height: 70%; }
 
-        h1 {
-            color: #d81b60;
-            margin-bottom: 2vh;
-            font-family: 'Dancing Script', cursive;
-            font-size: clamp(2.5rem, 6vh, 4rem);
-            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
-            line-height: 1.2;
-        }
-
-        .giris-mesaji {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(1.1rem, 2.5vh, 1.4rem);
-            color: #880e4f;
-            margin-bottom: 3vh;
-            font-style: italic;
-            line-height: 1.5;
-            padding: 0 2vw;
-        }
-
-        .cicekler {
-            font-size: clamp(3rem, 7vh, 4rem);
-            margin-bottom: 2vh;
-            animation: salla 4s infinite ease-in-out;
-            filter: drop-shadow(0 5px 15px rgba(255, 105, 180, 0.5));
-        }
-
-        @keyframes salla {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-10px) scale(1.05); }
-        }
-
-        .buttons {
-            display: flex;
-            justify-content: center;
-            margin-top: 1vh;
-            width: 100%;
-        }
-
-        button {
-            font-family: 'Nunito', sans-serif;
-            font-size: clamp(1.1rem, 3vh, 1.6rem);
-            padding: 2vh 6vw;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 800;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Daha yumuşak büyüme */
-            z-index: 20;
-        }
-
-        #evet {
-            background: linear-gradient(45deg, #ff4081, #f50057);
-            color: white;
-            box-shadow: 0 8px 25px rgba(245, 0, 87, 0.5);
-            animation: heartbeat 2s infinite;
-        }
-
-        @keyframes heartbeat {
-            0% { transform: scale(1); box-shadow: 0 8px 25px rgba(245, 0, 87, 0.4); }
-            15% { transform: scale(1.05); box-shadow: 0 12px 30px rgba(245, 0, 87, 0.6); }
-            30% { transform: scale(1); box-shadow: 0 8px 25px rgba(245, 0, 87, 0.4); }
-            45% { transform: scale(1.05); box-shadow: 0 12px 30px rgba(245, 0, 87, 0.6); }
-            100% { transform: scale(1); box-shadow: 0 8px 25px rgba(245, 0, 87, 0.4); }
-        }
-
-        #evet:hover {
-            background: linear-gradient(45deg, #f50057, #c51162);
-            transform: scale(1.1) !important;
-            animation: none;
-        }
-
-        /* Mutlu Son Ekranı */
-        #mutlu-son {
+        /* MODAL STİLLERİ */
+        .modal-overlay {
             display: none;
-            text-align: center;
-            animation: fadeIn 1.5s ease-in-out;
-            width: 100%;
-            padding-top: 2vh;
-            padding-bottom: 2vh;
-        }
-
-        #mutlu-son img {
-            width: clamp(120px, 20vh, 180px);
-            height: clamp(120px, 20vh, 180px);
-            border-radius: 50%;
-            object-fit: cover;
-            border: 6px solid #fff;
-            margin-bottom: 1.5vh;
-            box-shadow: 0 0 25px rgba(255, 64, 129, 0.6);
-            animation: glow 3s infinite alternate;
-        }
-
-        @keyframes glow {
-            from { box-shadow: 0 0 15px rgba(255, 64, 129, 0.4); }
-            to { box-shadow: 0 0 35px rgba(255, 64, 129, 0.8); }
-        }
-
-        /* İltifatlar ve Alıntılar Bölümü */
-        .ask-sozleri {
-            margin-top: 2vh;
-            padding: 2vh;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 20px;
-            border: 1px dashed rgba(216, 27, 96, 0.3);
-        }
-
-        .alinti {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(1rem, 2vh, 1.2rem);
-            color: #4a148c;
-            line-height: 1.6;
-            margin-bottom: 1.5vh;
-        }
-
-        .alinti-yazar {
-            font-size: 0.85rem;
-            color: #d81b60;
-            text-align: right;
-            font-weight: bold;
-            margin-top: -1vh;
-            margin-bottom: 2vh;
-        }
-
-        .iltifat {
-            font-family: 'Nunito', sans-serif;
-            font-weight: 600;
-            color: #ad1457;
-            font-size: clamp(1rem, 2.2vh, 1.15rem);
-            margin-bottom: 1vh;
-        }
-
-        hr.ayirici {
-            border: 0;
-            height: 1px;
-            background-image: linear-gradient(to right, rgba(216, 27, 96, 0), rgba(216, 27, 96, 0.5), rgba(216, 27, 96, 0));
-            margin: 2vh 0;
-        }
-
-        /* Sayaç Tasarımı */
-        .sayac-kutusu {
-            display: flex;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 0, 5, 0.9);
+            z-index: 3000;
             justify-content: center;
-            gap: 2vw;
-            margin-top: 2vh;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal {
+            background: var(--deep-black);
+            border: 2px solid var(--neon-purple);
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 0 40px rgba(188, 19, 254, 0.3);
+            position: relative;
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            color: var(--neon-purple);
+            text-align: center;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--dark-purple);
+            padding-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--system-green);
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
             width: 100%;
+            background: #000;
+            border: 1px solid var(--dark-purple);
+            color: #fff;
+            padding: 10px;
+            font-family: var(--fira);
+            transition: 0.3s;
         }
 
-        .zaman-birimi {
-            background: rgba(255, 255, 255, 0.8);
-            color: #d81b60;
-            padding: 1.2vh 1vw;
-            border-radius: 15px;
-            flex: 1;
-            box-shadow: inset 0 0 10px rgba(255, 179, 217, 0.3), 0 5px 15px rgba(216, 27, 96, 0.1);
-            border: 1px solid rgba(255, 179, 217, 0.8);
-        }
-
-        .zaman-degeri {
-            font-size: clamp(1.1rem, 3vh, 1.6rem);
-            font-weight: 800;
-            display: block;
-        }
-
-        .zaman-etiketi {
-            font-size: clamp(0.55rem, 1.2vh, 0.75rem);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 3px;
-            display: block;
-            font-weight: 700;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+        .form-group input:focus {
+            border-color: var(--neon-purple);
+            outline: none;
+            box-shadow: inset 0 0 10px rgba(188, 19, 254, 0.2);
         }
     </style>
 </head>
 <body>
 
-    <!-- Uçuşan Kalplerin Konteyneri -->
-    <div id="heart-container"></div>
+    <img src="https://upload.wikimedia.org/wikipedia/tr/0/08/Sel%C3%A7uk_%C3%9Cniversitesi_logo.png" alt="Selçuk Üniversitesi Logosu" class="univ-logo" onerror="this.style.display='none'">
 
-    <!-- Soru Ekranı -->
-    <div class="container" id="soru-ekrani">
-        <div class="cicekler">🌸 💖 🌷</div>
-        <p class="giris-mesaji">"Hayatıma girdiğin o günden beri, her sabah daha güzel bir dünyaya uyanıyorum..."</p>
-        <h1 style="font-family: 'Dancing Script', cursive;">Melike,<br>Beni seviyor musun?</h1>
-        <div class="buttons">
-            <button id="evet">Evet, Çok Seviyorum! 🥰</button>
+    <div class="container">
+        <div class="header">
+            <div class="logo-box">
+                <h1>PHASE:ZERO v1.2</h1>
+                <div class="tagline">POLY HACK TEAM // ŞAKİR İSLAM KARABULUT</div>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <div id="drop-zone">
+                <p>[ VERİ ANALİZİ İÇİN GÖRSELİ BURAYA BIRAKIN ]</p>
+                <input type="file" id="file-input" accept="image/*" style="display:none">
+                <div class="action-btns" style="margin-top:20px">
+                    <button id="open-cam-btn" class="btn">CANLI TARAMA MODU</button>
+                </div>
+            </div>
+            <div class="preview-box" id="preview-box">
+                <div class="scanner-bar" id="scanner-bar"></div>
+                <img id="img-preview" src="">
+            </div>
+        </div>
+
+        <div class="terminal" id="terminal-output">
+            <div class="log-line">
+                <span class="prefix">[SİSTEM]</span>
+                <span>Proje Modülü v1.2 Aktif.</span>
+            </div>
+            <div class="log-line highlight">
+                <span class="prefix">[OPERATÖR]</span>
+                <span>Şakir İslam Karabulut</span>
+            </div>
+            <div class="log-line">
+                <span class="prefix">[DURUM]</span>
+                <span>Sistem giriş paketini bekliyor.</span>
+            </div>
+        </div>
+
+        <div id="map-container"></div>
+
+        <div class="action-btns" id="result-btns" style="display:none">
+            <button id="download-btn" class="btn">ANALİZ RAPORUNU İNDİR (.TXT)</button>
+            <button id="edit-btn" class="btn" style="border-color: #00f0ff; color: #00f0ff;">VERİLERİ DEĞİŞTİR</button>
+            <button id="clean-btn" class="btn special">GİZLİLİK TEMİZLİĞİ</button>
+            <button id="reset-btn" class="btn">SİSTEMİ YENİLE</button>
         </div>
     </div>
 
-    <!-- Cevap Evet Olunca Çıkacak Ekran -->
-    <div class="container" id="mutlu-son">
-        <!-- İstersen aşağıdaki linki sizin bir fotoğrafınızın linkiyle değiştirebilirsin -->
-        <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Aşk" onerror="this.style.display='none'">
-        
-        <h1 style="font-family: 'Dancing Script', cursive;">Ben de seni çok seviyorum! ❤️</h1>
-        
-        <div class="ask-sozleri">
-            <p class="iltifat">Sen benim en güzel manzaramsın. Gülüşünle dünyamı aydınlatan, kalbimin en huzurlu köşesisin.</p>
-            <hr class="ayirici">
-            <p class="alinti"><i>"Bir insanı sevmekle başlayacak her şey..."</i></p>
-            <p class="alinti-yazar">- Sait Faik Abasıyanık</p>
-            <hr class="ayirici">
-            <p class="alinti"><i>"Okyanusta ölmez de insan, gider bir kaşık 'sevda' da boğulur." Ben sende boğulmaya, seninle nefes almaya geldim.</i></p>
-            <p class="alinti-yazar">- Cemal Süreya & Benim Kalbim</p>
-            <hr class="ayirici">
-            <p class="iltifat">İyi ki varsın, iyi ki benimlesin sevgilim...</p>
-        </div>
-
-        <!-- Sayaç Kısmı -->
-        <p style="color: #d81b60; font-size: clamp(0.9rem, 2vh, 1.1rem); margin-top: 3vh; font-weight: bold;">Ruhumun eşini bulduğum o günden beri:</p>
-        <div class="sayac-kutusu" id="sayac-kutusu">
-            <div class="zaman-birimi"><span class="zaman-degeri" id="gun">0</span><span class="zaman-etiketi">Gün</span></div>
-            <div class="zaman-birimi"><span class="zaman-degeri" id="saat">0</span><span class="zaman-etiketi">Saat</span></div>
-            <div class="zaman-birimi"><span class="zaman-degeri" id="dakika">0</span><span class="zaman-etiketi">Dakika</span></div>
-            <div class="zaman-birimi"><span class="zaman-degeri" id="saniye">0</span><span class="zaman-etiketi">Saniye</span></div>
+    <div class="cam-overlay" id="cam-overlay">
+        <video id="webcam" autoplay playsinline></video>
+        <div class="action-btns" style="margin-top:20px">
+            <button id="capture-btn" class="btn">GÖRÜNTÜYÜ İŞLE</button>
+            <button id="close-cam-btn" class="btn">İPTAL</button>
         </div>
     </div>
+
+    <!-- VERİ MANİPÜLASYONU MODALI -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal">
+            <h2>[ METAVERİ MANİPÜLASYONU ]</h2>
+            <div class="form-group">
+                <label>CİHAZ MARKASI (MAKE)</label>
+                <input type="text" id="exif-make" placeholder="Örn: SONY, NIKON, APPLE">
+            </div>
+            <div class="form-group">
+                <label>CİHAZ MODELİ (MODEL)</label>
+                <input type="text" id="exif-model" placeholder="Örn: ILCE-7RM4, iPhone 15 Pro">
+            </div>
+            <div class="form-group">
+                <label>YAZILIM / EDİTÖR (SOFTWARE)</label>
+                <input type="text" id="exif-software" placeholder="Örn: Adobe Photoshop 2024">
+            </div>
+            <div class="form-group">
+                <label>ÇEKİM TARİHİ (YYYY:AA:GG SS:DD:SS)</label>
+                <input type="text" id="exif-date" placeholder="Örn: 2026:01:01 12:00:00">
+            </div>
+            <div class="form-group">
+                <label>LENS MODELİ (LENS)</label>
+                <input type="text" id="exif-lens" placeholder="Örn: 24-70mm f/2.8">
+            </div>
+            <div class="form-group">
+                <label>SANATÇI / YAZAR (ARTIST)</label>
+                <input type="text" id="exif-artist" placeholder="Örn: Siber Operatör">
+            </div>
+            <div class="grid-layout" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
+                <div class="form-group">
+                    <label>ENLEM (LATITUDE)</label>
+                    <input type="number" id="exif-lat" step="any" placeholder="Örn: 41.0082">
+                </div>
+                <div class="form-group">
+                    <label>BOYLAM (LONGITUDE)</label>
+                    <input type="number" id="exif-lon" step="any" placeholder="Örn: 28.9784">
+                </div>
+            </div>
+            <div class="action-btns" style="margin-top: 25px;">
+                <button id="save-exif-btn" class="btn special">KAYDET VE İNDİR</button>
+                <button id="close-modal-btn" class="btn">İPTAL</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        PROJE ÖDEVİ // ŞAKİR İSLAM KARABULUT // POLY HACK TEAM
+    </footer>
 
     <script>
-        // --- ARKA PLANDA UÇUŞAN KALPLER OLUŞTURUCU ---
-        const heartContainer = document.getElementById('heart-container');
-        const hearts = ['💖', '💕', '💗', '💓', '🌸', '✨']; // Sadece kalp değil, çiçek ve ışıltı da var
-        
-        function createHeart() {
-            const heart = document.createElement('div');
-            heart.classList.add('floating-heart');
-            heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
-            
-            // Rastgele konum, boyut ve animasyon süresi
-            heart.style.left = Math.random() * 100 + 'vw';
-            heart.style.animationDuration = Math.random() * 3 + 4 + 's'; // 4 ile 7 saniye arası
-            heart.style.fontSize = Math.random() * 1.5 + 1 + 'rem';
-            
-            heartContainer.appendChild(heart);
-            
-            // Animasyon bitince kalbi sil ki sayfayı yormasın
-            setTimeout(() => {
-                heart.remove();
-            }, 7000);
+        const terminal = document.getElementById('terminal-output');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const previewBox = document.getElementById('preview-box');
+        const imgPreview = document.getElementById('img-preview');
+        const scannerBar = document.getElementById('scanner-bar');
+        const resultBtns = document.getElementById('result-btns');
+        const mapContainer = document.getElementById('map-container');
+        const downloadBtn = document.getElementById('download-btn');
+        const cleanBtn = document.getElementById('clean-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const editBtn = document.getElementById('edit-btn');
+        const editModal = document.getElementById('edit-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const saveExifBtn = document.getElementById('save-exif-btn');
+        const openCamBtn = document.getElementById('open-cam-btn');
+        const camOverlay = document.getElementById('cam-overlay');
+        const webcam = document.getElementById('webcam');
+        const captureBtn = document.getElementById('capture-btn');
+        const closeCamBtn = document.getElementById('close-cam-btn');
+
+        let activeMetadata = null;
+        let activeFile = null;
+        let map = null;
+        let stream = null;
+
+        // GPS Koordinatlarını EXIF formatına çeviren yardımcı fonksiyon
+        function degToDmsRational(degrees) {
+            const absolute = Math.abs(degrees);
+            const degreesInt = Math.floor(absolute);
+            const minutesNotTruncated = (absolute - degreesInt) * 60;
+            const minutesInt = Math.floor(minutesNotTruncated);
+            const seconds = Math.floor((minutesNotTruncated - minutesInt) * 60 * 100);
+            return [[degreesInt, 1], [minutesInt, 1], [seconds, 100]];
         }
+
+        async function logMessage(msg, type = "SİSTEM", isError = false) {
+            const line = document.createElement('div');
+            line.className = `log-line ${isError ? 'error' : ''}`;
+            const prefix = document.createElement('span');
+            prefix.className = 'prefix';
+            prefix.textContent = `[${type}]`;
+            line.appendChild(prefix);
+            const content = document.createElement('span');
+            line.appendChild(content);
+            terminal.appendChild(line);
+            for (let i = 0; i < msg.length; i++) {
+                content.textContent += msg[i];
+                await new Promise(r => setTimeout(r, 6)); 
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        }
+
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => processFile(e.target.files[0]);
         
-        // Her 400 milisaniyede bir kalp üret
-        setInterval(createHeart, 400);
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            processFile(e.dataTransfer.files[0]);
+        };
 
-        // --- BUTON VE EKRAN GEÇİŞİ ---
-        const evetButonu = document.getElementById('evet');
-        const soruEkrani = document.getElementById('soru-ekrani');
-        const mutluSonEkrani = document.getElementById('mutlu-son');
+        openCamBtn.onclick = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                webcam.srcObject = stream;
+                camOverlay.style.display = 'flex';
+                await logMessage("Kamera erişimi onaylandı.", "KAMERA");
+            } catch (err) {
+                await logMessage("Kamera başlatılamadı.", "HATA", true);
+            }
+        };
 
-        evetButonu.addEventListener('click', function() {
-            soruEkrani.style.display = 'none';
-            mutluSonEkrani.style.display = 'flex';
-            mutluSonEkrani.style.flexDirection = 'column';
-            mutluSonEkrani.style.alignItems = 'center';
+        closeCamBtn.onclick = () => {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            camOverlay.style.display = 'none';
+        };
 
-            // Harika bir konfeti şöleni
-            var duration = 5 * 1000;
-            var animationEnd = Date.now() + duration;
-            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+        captureBtn.onclick = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = webcam.videoWidth;
+            canvas.height = webcam.videoHeight;
+            canvas.getContext('2d').drawImage(webcam, 0, 0);
+            canvas.toBlob((blob) => {
+                const file = new File([blob], "capture_" + Date.now() + ".jpg", { type: "image/jpeg" });
+                closeCamBtn.click();
+                processFile(file);
+            }, 'image/jpeg');
+        };
 
-            function randomInRange(min, max) {
-                return Math.random() * (max - min) + min;
+        async function processFile(file) {
+            if (!file) return;
+            activeFile = file;
+            terminal.innerHTML = "";
+            mapContainer.style.display = 'none';
+            resultBtns.style.display = 'none';
+            if (map) { map.remove(); map = null; }
+
+            imgPreview.src = URL.createObjectURL(file);
+            previewBox.style.display = 'flex';
+            scannerBar.style.display = 'block';
+
+            await logMessage(`Dosya alındı: ${file.name}`, "VERİ");
+            await logMessage("Meta-veri ayrıştırma işlemi başladı...", "İŞLEM");
+
+            try {
+                const data = await exifr.parse(file, {
+                    gps: true, tiff: true, exif: true, xmp: true, iptc: true, reviveValues: true
+                });
+
+                await new Promise(r => setTimeout(r, 1200));
+                scannerBar.style.display = 'none';
+
+                if (!data || Object.keys(data).length === 0) {
+                    await logMessage("UYARI: Kapsamlı meta-veri bulunamadı.", "ADLİ-UYARI", true);
+                    await logMessage("WhatsApp, Instagram vb. platformlar bu verileri siler.", "BİLGİ");
+                    await logMessage("Verileri görmek için 'Belge' olarak gönderilen orijinal dosyayı kullanın.", "TAVSİYE");
+                    
+                    renderTable({ 'Analiz Durumu': 'Meta-veri temizlenmiş (WhatsApp vb.)', 'Dosya Boyutu': (file.size/1024).toFixed(2) + " KB" });
+                } else {
+                    activeMetadata = data;
+                    await logMessage("Veri blokları başarıyla çözüldü.", "BAŞARI");
+
+                    // --- MANİPÜLASYON VE SPOOFING TESPİT SİSTEMİ ---
+                    if (data.Software && data.Software.toUpperCase().includes("PHASE:ZERO")) {
+                        await logMessage("!!! KRİTİK UYARI !!! SİSTEM MANİPÜLASYON TESPİT ETTİ!", "ADLİ-TESPİT", true);
+                        await logMessage("Bu dosyanın meta verileri yapay olarak SAHTELENMİŞTİR.", "ADLİ-TESPİT", true);
+                        
+                        // Uyarı efekti: Terminal çerçevesini kısa süreliğine kırmızı yap
+                        terminal.style.boxShadow = "inset 0 0 50px rgba(255, 0, 85, 0.6)";
+                        setTimeout(() => { terminal.style.boxShadow = "inset 0 0 30px rgba(188, 19, 254, 0.15)"; }, 4000);
+                    } else if (data.Software && (data.Software.match(/photoshop|gimp|lightroom|canva/i))) {
+                        await logMessage("BİLGİ: Dosya bir fotoğraf düzenleyici ile modifiye edilmiş.", "ANALİZ");
+                    }
+
+                    renderTable(data);
+                    if (data.latitude && data.longitude) {
+                        await logMessage("Coğrafi konum verisi tespit edildi.", "GPS");
+                        initMap(data.latitude, data.longitude);
+                    }
+                }
+
+                resultBtns.style.display = 'flex';
+                await logMessage("Analiz tamamlandı.", "SONUÇ");
+
+            } catch (err) {
+                scannerBar.style.display = 'none';
+                await logMessage(`HATA: ${err.message}`, "KRİTİK", true);
+            }
+        }
+
+        function renderTable(data) {
+            const table = document.createElement('table');
+            table.className = 'data-table';
+            table.innerHTML = `<tr><th>KATEGORİ</th><th>DEĞER</th></tr>`;
+
+            // Daha detaylı EXIF alanları eklendi
+            const items = {
+                'Cihaz Markası': data.Make,
+                'Cihaz Modeli': data.Model,
+                'Yazılım / İşletim Sistemi': data.Software,
+                'Oluşturulma Tarihi': data.DateTimeOriginal ? new Date(data.DateTimeOriginal).toLocaleString('tr-TR') : null,
+                'Değiştirilme Tarihi': data.ModifyDate ? new Date(data.ModifyDate).toLocaleString('tr-TR') : null,
+                'Görüntü Boyutları': (data.ExifImageWidth && data.ExifImageHeight) ? `${data.ExifImageWidth} x ${data.ExifImageHeight} px` : null,
+                'Lens Bilgisi': data.LensModel,
+                'Odak Uzaklığı': data.FocalLength ? data.FocalLength + ' mm' : null,
+                'ISO Hassasiyeti': data.ISO,
+                'Diyafram Açıklığı': data.FNumber ? 'f/' + data.FNumber : null,
+                'Pozlama Süresi': data.ExposureTime ? '1/' + Math.round(1/data.ExposureTime) + ' sn' : null,
+                'Pozlama Telafisi': data.ExposureCompensation ? data.ExposureCompensation + ' EV' : null,
+                'Flaş Durumu': data.Flash ? 'Flaş Kullanıldı' : (data.Flash === 0 ? 'Flaş Kullanılmadı' : data.Flash),
+                'Beyaz Dengesi': data.WhiteBalance,
+                'Ölçüm Modu': data.MeteringMode,
+                'Renk Uzayı': data.ColorSpace === 1 ? 'sRGB' : (data.ColorSpace === 2 ? 'Adobe RGB' : data.ColorSpace),
+                'Konum (Enlem)': data.latitude ? data.latitude.toFixed(6) : null,
+                'Konum (Boylam)': data.longitude ? data.longitude.toFixed(6) : null,
+                'Rakım (Yükseklik)': data.GPSAltitude ? data.GPSAltitude.toFixed(2) + ' metre' : null
+            };
+
+            // Ekranda gösterilen standart verilerin anahtarları (tekrar etmemesi için)
+            const usedKeys = ['Make', 'Model', 'Software', 'DateTimeOriginal', 'ModifyDate', 'ExifImageWidth', 'ExifImageHeight', 'LensModel', 'FocalLength', 'ISO', 'FNumber', 'ExposureTime', 'ExposureCompensation', 'Flash', 'WhiteBalance', 'MeteringMode', 'ColorSpace', 'latitude', 'longitude', 'GPSAltitude'];
+
+            // Standart öğeleri tabloya ekle
+            for (let [k, v] of Object.entries(items)) {
+                if (v !== undefined && v !== null && v !== '') {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${k}</td><td>${v}</td>`;
+                    table.appendChild(tr);
+                }
+            }
+            
+            // Eğer standart değerler haricinde ekstra raw bilgi varsa onları da listele (Maksimum detay)
+            let extraAdded = false;
+            for (let [k, v] of Object.entries(data)) {
+                if (!usedKeys.includes(k) && typeof v !== 'object' && v !== '') {
+                    if (!extraAdded) {
+                        const trHead = document.createElement('tr');
+                        trHead.innerHTML = `<th colspan="2" style="background: rgba(0, 255, 65, 0.2); color: var(--system-green); text-align: center;">[ HAM (RAW) VERİ DÖKÜMÜ ]</th>`;
+                        table.appendChild(trHead);
+                        extraAdded = true;
+                    }
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>RAW_DATA: ${k}</td><td style="color: #aaa;">${v}</td>`;
+                    table.appendChild(tr);
+                }
             }
 
-            var interval = setInterval(function() {
-                var timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) { return clearInterval(interval); }
-                var particleCount = 60 * (timeLeft / duration);
-                
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-            }, 250);
-        });
-
-        // --- SAYAÇ KODLARI ---
-        const suAnkiTarih = new Date();
-        const tanismaTarihi = new Date(suAnkiTarih.getFullYear(), suAnkiTarih.getMonth(), 2, 20, 0, 0); // Ayın 2'si saat 20:00 olarak ayarlandı
-
-        function sayaciGuncelle() {
-            const simdi = new Date();
-            const fark = simdi - tanismaTarihi;
-
-            if (fark < 0) return;
-
-            const gun = Math.floor(fark / (1000 * 60 * 60 * 24));
-            const saat = Math.floor((fark % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const dakika = Math.floor((fark % (1000 * 60 * 60)) / (1000 * 60));
-            const saniye = Math.floor((fark % (1000 * 60)) / 1000);
-
-            document.getElementById('gun').innerText = gun;
-            document.getElementById('saat').innerText = saat;
-            document.getElementById('dakika').innerText = dakika;
-            document.getElementById('saniye').innerText = saniye;
+            terminal.appendChild(table);
+            terminal.scrollTop = terminal.scrollHeight;
         }
 
-        sayaciGuncelle();
-        setInterval(sayaciGuncelle, 1000);
-    </script>
+        function initMap(lat, lon) {
+            mapContainer.style.display = 'block';
+            map = L.map(mapContainer).setView([lat, lon], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            L.marker([lat, lon]).addTo(map).bindPopup("<b>LOKASYON</b>").openPopup();
+        }
 
+        cleanBtn.onclick = async () => {
+            if (!activeFile) return;
+            
+            // Kullanıcıya güven veren terminal aşamaları
+            await logMessage("GİZLİLİK PROTOKOLÜ BAŞLATILDI...", "GÜVENLİK");
+            await logMessage("GPS koordinatları haritadan siliniyor...", "İŞLEM");
+            await logMessage("Cihaz ve lens seri numaraları yok ediliyor...", "İŞLEM");
+            await logMessage("Zaman damgaları sıfırlanıyor...", "İŞLEM");
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.onload = () => {
+                // Görüntüyü canvas'a çizerek meta verilerin yeni dosyaya geçmesini fiziksel olarak engelliyoruz.
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                // Kaliteyi bozmadan, ancak sadece piksel verisi olarak dışarı aktar
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = "SECURE_" + activeFile.name;
+                    a.click();
+                    logMessage("TÜM İZLER SİLİNDİ. Güvenli görüntü indirildi.", "BAŞARI");
+                }, 'image/jpeg', 1.0); 
+            };
+            img.src = imgPreview.src;
+        };
+
+        // MODAL VE VERİ MANİPÜLASYON İŞLEMLERİ
+        editBtn.onclick = () => {
+            if (!activeFile) return;
+            
+            // Mevcut verileri inputlara doldur (varsa)
+            document.getElementById('exif-make').value = activeMetadata?.Make || '';
+            document.getElementById('exif-model').value = activeMetadata?.Model || '';
+            document.getElementById('exif-software').value = activeMetadata?.Software || 'PHASE:ZERO INJECTOR';
+            document.getElementById('exif-lens').value = activeMetadata?.LensModel || '';
+            document.getElementById('exif-artist').value = activeMetadata?.Artist || '';
+            document.getElementById('exif-lat').value = activeMetadata?.latitude || '';
+            document.getElementById('exif-lon').value = activeMetadata?.longitude || '';
+            
+            // Tarihi doğru formata çevir veya sahte tarih koy
+            let dateStr = "2026:04:05 14:30:00"; // Varsayılan sahte tarih
+            if (activeMetadata?.DateTimeOriginal) {
+                const d = new Date(activeMetadata.DateTimeOriginal);
+                const pad = (n) => n < 10 ? '0' + n : n;
+                dateStr = `${d.getFullYear()}:${pad(d.getMonth() + 1)}:${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+            }
+            document.getElementById('exif-date').value = dateStr;
+
+            editModal.style.display = 'flex';
+        };
+
+        closeModalBtn.onclick = () => {
+            editModal.style.display = 'none';
+        };
+
+        saveExifBtn.onclick = async () => {
+            editModal.style.display = 'none';
+            await logMessage("METAVERİ ENJEKSİYONU (SPOOFING) BAŞLATILDI...", "HACK");
+
+            const make = document.getElementById('exif-make').value;
+            const model = document.getElementById('exif-model').value;
+            const software = document.getElementById('exif-software').value;
+            const datetime = document.getElementById('exif-date').value;
+            const lens = document.getElementById('exif-lens').value;
+            const artist = document.getElementById('exif-artist').value;
+            const lat = parseFloat(document.getElementById('exif-lat').value);
+            const lon = parseFloat(document.getElementById('exif-lon').value);
+
+            // Güvenli (temizlenmiş) bir JPEG katmanı oluştur
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = async () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                // Resmi Base64 formatına çevir (piexifjs bu formatta çalışır)
+                const jpegData = canvas.toDataURL('image/jpeg', 1.0);
+
+                // Yeni EXIF nesnesini oluştur
+                const zeroth = {};
+                const exif = {};
+                const gps = {};
+
+                if (make) zeroth[piexif.ImageIFD.Make] = make;
+                if (model) zeroth[piexif.ImageIFD.Model] = model;
+                if (software) zeroth[piexif.ImageIFD.Software] = software;
+                if (datetime) zeroth[piexif.ImageIFD.DateTime] = datetime;
+                if (artist) zeroth[piexif.ImageIFD.Artist] = artist;
+
+                if (lens) exif[piexif.ExifIFD.LensModel] = lens;
+
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    gps[piexif.GPSIFD.GPSLatitudeRef] = lat >= 0 ? 'N' : 'S';
+                    gps[piexif.GPSIFD.GPSLatitude] = degToDmsRational(lat);
+                    gps[piexif.GPSIFD.GPSLongitudeRef] = lon >= 0 ? 'E' : 'W';
+                    gps[piexif.GPSIFD.GPSLongitude] = degToDmsRational(lon);
+                }
+
+                const exifObj = {"0th": zeroth, "Exif": exif, "GPS": gps};
+                
+                try {
+                    // EXIF verisini byte'lara dönüştür ve resme enjekte et
+                    const exifBytes = piexif.dump(exifObj);
+                    const newJpeg = piexif.insert(exifBytes, jpegData);
+                    
+                    // İndirme işlemini tetikle
+                    const a = document.createElement('a');
+                    a.href = newJpeg;
+                    a.download = "SPOOFED_" + activeFile.name;
+                    a.click();
+                    
+                    await logMessage("Veriler başarıyla manipüle edildi.", "İŞLEM");
+                    await logMessage("SPOOFED_ ön ekli yeni dosya indiriliyor.", "BAŞARI");
+                } catch(e) {
+                    await logMessage("Enjeksiyon Hatası: Veri formatı yanlış olabilir.", "HATA", true);
+                }
+            };
+            img.src = imgPreview.src;
+        };
+
+        downloadBtn.onclick = () => {
+            let report = `PHASE:ZERO v1.2 // PROJE ANALİZ RAPORU\nOPERATÖR: ŞAKİR İSLAM KARABULUT\n\n`;
+            document.querySelectorAll('.data-table tr').forEach(r => {
+                const c = r.querySelectorAll('td, th');
+                if (c.length > 1) report += `${c[0].innerText}: ${c[1].innerText}\n`;
+            });
+            const blob = new Blob([report], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "ANALIZ_SONUCLARI.txt";
+            a.click();
+        };
+
+        resetBtn.onclick = () => location.reload();
+    </script>
 </body>
 </html>
